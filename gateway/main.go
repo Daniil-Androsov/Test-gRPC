@@ -19,11 +19,20 @@ func sumHandler(client2 pb.CalculatorServiceClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// 1. декодируем JSON body → {a, b}
 		var body pb.AddRequest
-		json.NewDecoder(r.Body).Decode(&body)
+		err := json.NewDecoder(r.Body).Decode(&body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if body.A == 0 && body.B == 0 {
+			http.Error(w, "a and b are required", http.StatusBadRequest)
+			return
+		}
 		// 2. вызываем client2.Sum(...)
 		res, err := client2.Sum(r.Context(), &body)
 		if err != nil {
-			log.Fatalf("Error while calculating sum: %v", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 		// 3. возвращаем JSON с результатом
 		json.NewEncoder(w).Encode(res)
@@ -34,11 +43,20 @@ func helloHandler(client pb.GreeterClient) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// 1. декодируем JSON body → {a, b}
 		var body pb.HelloRequest
-		json.NewDecoder(r.Body).Decode(&body)
+		err := json.NewDecoder(r.Body).Decode(&body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if body.Hello == "" {
+			http.Error(w, "hello required", http.StatusBadRequest)
+			return
+		}
 		// 2. вызываем client2.Sum(...)
 		res, err := client.SayHello(r.Context(), &body)
 		if err != nil {
-			log.Fatalf("Error while calling SayHello: %v", err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
 		// 3. возвращаем JSON с результатом
 		json.NewEncoder(w).Encode(res)
