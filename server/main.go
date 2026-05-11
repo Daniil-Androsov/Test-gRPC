@@ -28,6 +28,14 @@ func (s *Server) SayHello(ctx context.Context, req *pb.HelloRequest) (*pb.HelloR
 	return &pb.HelloResponse{Msg: req.Hello}, nil
 }
 
+type CalculatorServer struct {
+	pb.UnimplementedCalculatorServiceServer
+}
+
+func (s *CalculatorServer) Sum(ctx context.Context, req *pb.AddRequest) (*pb.AddResponse, error) {
+	return &pb.AddResponse{Result: int32(req.A) + int32(req.B)}, nil
+}
+
 func main() {
 	// 1. создать listener на порту 50051
 	lis, err := net.Listen("tcp", Address)
@@ -38,6 +46,7 @@ func main() {
 	srv := grpc.NewServer()
 	// 3. зарегистрировать наш сервис
 	pb.RegisterGreeterServer(srv, &Server{})
+	pb.RegisterCalculatorServiceServer(srv, &CalculatorServer{})
 	// 4. запустить
 	if err := srv.Serve(lis); err != nil { // srv.Serve(lis) именно тут мы начинаем слушать порт
 		slog.Error("serve", "err", err)

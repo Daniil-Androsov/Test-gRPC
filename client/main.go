@@ -5,6 +5,7 @@ import (
 
 	pb "TestGrpc/proto"
 	"context"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
@@ -27,6 +28,7 @@ func main() {
 
 	// 3. создать клиента (stub)
 	client := pb.NewGreeterClient(conn)
+	client2 := pb.NewCalculatorServiceClient(conn)
 
 	// 4. вызвать метод
 	res, err := client.SayHello(context.Background(), &pb.HelloRequest{Hello: "Hello"})
@@ -34,6 +36,11 @@ func main() {
 		log.Fatalf("could not greet: %v", err)
 	}
 
+	SumRes, err := client2.Sum(context.Background(), &pb.AddRequest{A: 10, B: 20})
+	if err != nil {
+		log.Fatalf("could not sum: %v", err)
+	}
 	// 5. вывести результат
 	log.Println(res)
+	log.Println(SumRes)
 }
